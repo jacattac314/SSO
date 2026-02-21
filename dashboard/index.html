@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legora SSO — Architecture Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg class="topbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span class="topbar-title">Legora SSO</span>
+      <span class="topbar-subtitle">Architecture Dashboard</span>
+    </div>
+    <nav class="topbar-nav" id="main-nav">
+      <button class="nav-tab active" data-panel="architecture">Architecture</button>
+      <button class="nav-tab" data-panel="simulator">Flow Simulator</button>
+      <button class="nav-tab" data-panel="tokens">Token Inspector</button>
+      <button class="nav-tab" data-panel="failures">Failure Lab</button>
+      <button class="nav-tab" data-panel="security">Security Audit</button>
+    </nav>
+  </header>
+
+  <main class="panels">
+    <!-- Architecture Panel -->
+    <section class="panel active" id="panel-architecture">
+      <div class="panel-header">
+        <h2>System Architecture</h2>
+        <p class="panel-desc">Interactive view of the SSO Service Provider architecture. Click nodes for details.</p>
+      </div>
+      <div class="arch-container">
+        <svg id="arch-svg" viewBox="0 0 1200 760"></svg>
+      </div>
+      <div class="arch-detail" id="arch-detail">
+        <div class="detail-placeholder">Click a component to view details</div>
+      </div>
+    </section>
+
+    <!-- Flow Simulator Panel -->
+    <section class="panel" id="panel-simulator">
+      <div class="panel-header">
+        <h2>Authentication Flow Simulator</h2>
+        <p class="panel-desc">Step through each protocol's authentication flow.</p>
+      </div>
+      <div class="sim-controls">
+        <div class="sim-protocol-select">
+          <button class="proto-btn active" data-flow="oidc">OIDC + PKCE</button>
+          <button class="proto-btn" data-flow="saml">SAML 2.0</button>
+          <button class="proto-btn" data-flow="webauthn">WebAuthn MFA</button>
+          <button class="proto-btn" data-flow="session">Session Lifecycle</button>
+        </div>
+        <div class="sim-step-controls">
+          <button class="btn btn-secondary" id="sim-prev" disabled>&larr; Previous</button>
+          <span class="sim-step-label" id="sim-step-label">Step 1 / 10</span>
+          <button class="btn btn-primary" id="sim-next">Next &rarr;</button>
+          <button class="btn btn-ghost" id="sim-reset">Reset</button>
+        </div>
+      </div>
+      <div class="sim-body">
+        <div class="sim-diagram" id="sim-diagram"></div>
+        <div class="sim-info" id="sim-info">
+          <div class="sim-step-title" id="sim-step-title"></div>
+          <div class="sim-step-detail" id="sim-step-detail"></div>
+          <div class="sim-step-security" id="sim-step-security"></div>
+          <div class="sim-step-data" id="sim-step-data"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Token Inspector Panel -->
+    <section class="panel" id="panel-tokens">
+      <div class="panel-header">
+        <h2>Token Inspector</h2>
+        <p class="panel-desc">Simulated view of token and session data structures.</p>
+      </div>
+      <div class="token-grid" id="token-grid"></div>
+    </section>
+
+    <!-- Failure Lab Panel -->
+    <section class="panel" id="panel-failures">
+      <div class="panel-header">
+        <h2>Failure Lab</h2>
+        <p class="panel-desc">Toggle failure conditions to see how the system responds. Each toggle injects a specific failure into the simulated flow.</p>
+      </div>
+      <div class="failure-grid" id="failure-grid"></div>
+      <div class="failure-detail" id="failure-detail">
+        <div class="detail-placeholder">Activate a toggle to see failure details</div>
+      </div>
+    </section>
+
+    <!-- Security Audit Panel -->
+    <section class="panel" id="panel-security">
+      <div class="panel-header">
+        <h2>Security Audit</h2>
+        <p class="panel-desc">Feature comparison against enterprise baselines and gap analysis.</p>
+      </div>
+      <div class="security-content" id="security-content"></div>
+    </section>
+  </main>
+
+  <script src="js/main.js"></script>
+  <script src="js/architecture.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/tokens.js"></script>
+  <script src="js/failures.js"></script>
+  <script src="js/security.js"></script>
+</body>
+</html>
