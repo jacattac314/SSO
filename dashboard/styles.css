@@ -754,6 +754,150 @@ body {
 .sev-medium { background: var(--yellow-bg); color: var(--yellow); }
 .sev-low { background: rgba(99, 104, 128, 0.15); color: var(--text-muted); }
 
+/* === Demo Bar === */
+#demo-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-active);
+  padding: 0 24px;
+  height: 52px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.45);
+  animation: demo-bar-slide-in 0.3s ease;
+}
+@keyframes demo-bar-slide-in {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.demo-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.demo-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.demo-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: demo-pulse-anim 1.4s ease-in-out infinite;
+}
+@keyframes demo-pulse-anim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.75); }
+}
+.demo-bar-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+.demo-bar-phase {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: rgba(79, 110, 247, 0.12);
+  padding: 2px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.demo-bar-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.demo-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: 20px;
+}
+.demo-progress-wrap {
+  width: 110px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.demo-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+.demo-bar-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.demo-stop-btn {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.demo-stop-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+/* Play Demo button in topbar */
+#demo-play-btn {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  background: rgba(79, 110, 247, 0.1);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#demo-play-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+#demo-play-btn.demo-btn-active {
+  background: var(--red-bg);
+  border-color: var(--red);
+  color: var(--red);
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
