@@ -3,24 +3,24 @@ window.Security = (function () {
   'use strict';
 
   const comparisonData = [
-    { feature: 'Auth protocols',            system: 'OIDC + SAML 2.0 + WebAuthn',                 baseline: 'OIDC + SAML 2.0 + WebAuthn',                  status: 'pass' },
-    { feature: 'PKCE',                       system: 'S256 enforced (RFC 7636)',                    baseline: 'S256 required',                                 status: 'pass' },
-    { feature: 'Token at rest',              system: 'Plaintext session token in DB',               baseline: 'SHA-256 hashed before storage',                 status: 'warn' },
-    { feature: 'Distributed state',          system: 'In-memory Map (single instance only)',        baseline: 'Redis cluster (shared across instances)',        status: 'fail' },
-    { feature: 'Refresh token logic',        system: 'Schema only — no implementation in code',     baseline: 'Full rotation with family replay detection',    status: 'fail' },
-    { feature: 'Algorithm pinning',          system: 'None (trusts JWKS from IdP)',                 baseline: 'Pin to RS256 / ES256',                          status: 'warn' },
-    { feature: 'Conditional access',         system: 'None — MFA is binary',                        baseline: 'IP, device posture, risk score evaluation',     status: 'fail' },
-    { feature: 'Session binding',            system: 'IP + UA stored but not enforced',             baseline: 'IP binding optional, UA enforced',              status: 'warn' },
-    { feature: 'Audit log',                  system: 'PostgreSQL partitioned, 365-day retention',   baseline: 'SIEM-integrated, immutable',                    status: 'pass' },
-    { feature: 'MFA enforcement',            system: 'Policy-enforced (no OIDC without MFA)',       baseline: 'Same',                                          status: 'pass' },
-    { feature: 'Certificate rotation',       system: '30-day expiry alerts',                        baseline: 'Automated rotation',                            status: 'warn' },
-    { feature: 'Secret encryption at rest',  system: 'AES-256-GCM (OIDC secrets, SAML keys)',      baseline: 'Same or HSM-backed',                            status: 'pass' },
-    { feature: 'Cookie security',            system: 'HttpOnly; Secure; SameSite=Lax',              baseline: 'Same',                                          status: 'pass' },
-    { feature: 'Rate limiting',              system: '20 req/15 min (in-memory store)',             baseline: 'Same with Redis-backed distributed store',      status: 'pass' },
-    { feature: 'CORS',                       system: 'Explicit allowlist, credentials: true',       baseline: 'Same',                                          status: 'pass' },
-    { feature: 'Security headers',           system: 'Helmet CSP + HSTS (1 year)',                  baseline: 'Same',                                          status: 'pass' },
-    { feature: 'SAML signature algo',        system: 'SHA-256 enforced (SHA-1 rejected)',           baseline: 'SHA-256 minimum',                               status: 'pass' },
-    { feature: 'WebAuthn user verification', system: 'required (UV flag enforced)',                 baseline: 'Same',                                          status: 'pass' },
+    { feature: 'Auth protocols', system: 'OIDC + SAML 2.0 + WebAuthn', baseline: 'OIDC + SAML 2.0 + WebAuthn', status: 'pass' },
+    { feature: 'PKCE', system: 'S256 enforced (RFC 7636)', baseline: 'S256 required', status: 'pass' },
+    { feature: 'Token at rest', system: 'Plaintext session token in DB', baseline: 'SHA-256 hashed before storage', status: 'warn' },
+    { feature: 'Distributed state', system: 'In-memory Map (single instance only)', baseline: 'Redis cluster (shared across instances)', status: 'fail' },
+    { feature: 'Refresh token logic', system: 'Schema only — no implementation in code', baseline: 'Full rotation with family replay detection', status: 'fail' },
+    { feature: 'Algorithm pinning', system: 'None (trusts JWKS from IdP)', baseline: 'Pin to RS256 / ES256', status: 'warn' },
+    { feature: 'Conditional access', system: 'None — MFA is binary', baseline: 'IP, device posture, risk score evaluation', status: 'fail' },
+    { feature: 'Session binding', system: 'IP + UA stored but not enforced', baseline: 'IP binding optional, UA enforced', status: 'warn' },
+    { feature: 'Audit log', system: 'PostgreSQL partitioned, 365-day retention', baseline: 'SIEM-integrated, immutable', status: 'pass' },
+    { feature: 'MFA enforcement', system: 'Policy-enforced (no OIDC without MFA)', baseline: 'Same', status: 'pass' },
+    { feature: 'Certificate rotation', system: '30-day expiry alerts', baseline: 'Automated rotation', status: 'warn' },
+    { feature: 'Secret encryption at rest', system: 'AES-256-GCM (OIDC secrets, SAML keys)', baseline: 'Same or HSM-backed', status: 'pass' },
+    { feature: 'Cookie security', system: 'HttpOnly; Secure; SameSite=Lax', baseline: 'Same', status: 'pass' },
+    { feature: 'Rate limiting', system: '20 req/15 min (in-memory store)', baseline: 'Same with Redis-backed distributed store', status: 'pass' },
+    { feature: 'CORS', system: 'Explicit allowlist, credentials: true', baseline: 'Same', status: 'pass' },
+    { feature: 'Security headers', system: 'Helmet CSP + HSTS (1 year)', baseline: 'Same', status: 'pass' },
+    { feature: 'SAML signature algo', system: 'SHA-256 enforced (SHA-1 rejected)', baseline: 'SHA-256 minimum', status: 'pass' },
+    { feature: 'WebAuthn user verification', system: 'required (UV flag enforced)', baseline: 'Same', status: 'pass' },
   ];
 
   const gaps = [
@@ -77,16 +77,16 @@ window.Security = (function () {
   ];
 
   const validationChecklist = [
-    { check: 'Issuer validated',       oidc: true,  saml: true,  webauthn: false, notes: 'openid-client / passport-saml' },
-    { check: 'Audience validated',     oidc: true,  saml: true,  webauthn: false, notes: 'openid-client / explicit check' },
-    { check: 'Signature verified',     oidc: true,  saml: true,  webauthn: true,  notes: 'JWKS / IdP cert / COSE key' },
-    { check: 'Nonce validated',        oidc: true,  saml: false, webauthn: false, notes: 'OIDC only' },
-    { check: 'State validated',        oidc: true,  saml: false, webauthn: false, notes: 'via InResponseTo for SAML' },
-    { check: 'InResponseTo validated', oidc: false, saml: true,  webauthn: false, notes: 'SP-initiated only' },
-    { check: 'Expiry enforced',        oidc: true,  saml: true,  webauthn: true,  notes: 'Session level / challenge TTL' },
-    { check: 'PKCE enforced',          oidc: true,  saml: false, webauthn: false, notes: 'S256 method' },
-    { check: 'User verification',      oidc: false, saml: false, webauthn: true,  notes: 'UV flag required' },
-    { check: 'Replay protection',      oidc: true,  saml: true,  webauthn: true,  notes: 'nonce / InResponseTo / counter' },
+    { check: 'Issuer validated', oidc: true, saml: true, webauthn: false, notes: 'openid-client / passport-saml' },
+    { check: 'Audience validated', oidc: true, saml: true, webauthn: false, notes: 'openid-client / explicit check' },
+    { check: 'Signature verified', oidc: true, saml: true, webauthn: true, notes: 'JWKS / IdP cert / COSE key' },
+    { check: 'Nonce validated', oidc: true, saml: false, webauthn: false, notes: 'OIDC only' },
+    { check: 'State validated', oidc: true, saml: false, webauthn: false, notes: 'via InResponseTo for SAML' },
+    { check: 'InResponseTo validated', oidc: false, saml: true, webauthn: false, notes: 'SP-initiated only' },
+    { check: 'Expiry enforced', oidc: true, saml: true, webauthn: true, notes: 'Session level / challenge TTL' },
+    { check: 'PKCE enforced', oidc: true, saml: false, webauthn: false, notes: 'S256 method' },
+    { check: 'User verification', oidc: false, saml: false, webauthn: true, notes: 'UV flag required' },
+    { check: 'Replay protection', oidc: true, saml: true, webauthn: true, notes: 'nonce / InResponseTo / counter' },
   ];
 
   function init() {
@@ -94,6 +94,26 @@ window.Security = (function () {
     if (!container) return;
 
     let html = '';
+
+    // Calculate score
+    let scoreNum = 0;
+    const maxScore = comparisonData.length * 100;
+    comparisonData.forEach(item => {
+      if (item.status === 'pass') scoreNum += 100;
+      else if (item.status === 'warn') scoreNum += 50;
+    });
+    const finalScore = Math.round((scoreNum / maxScore) * 100);
+
+    // Scorecard Gauge
+    html += `<div class="scorecard-container">
+      <div class="scorecard-chart" style="background: conic-gradient(var(--accent) 0% ${finalScore}%, rgba(255,255,255,0.05) ${finalScore}% 100%); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);">
+        <span class="scorecard-score">${finalScore}%</span>
+      </div>
+      <div class="scorecard-details">
+        <h3>Executive Compliance Score</h3>
+        <p>This score evaluates the system's current technical configuration against strict enterprise security and compliance baselines. A score above 85% is typically required for production deployment in highly regulated environments (FinTech, Healthcare).</p>
+      </div>
+    </div>`;
 
     // Feature Comparison Table
     html += `<div class="sec-section">

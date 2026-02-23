@@ -250,17 +250,32 @@ window.Simulator = (function () {
     });
   }
 
+  let activeFailure = null; // Track if we are running an attack simulation
+
   function renderFlow() {
     const flow = flows[currentFlow];
     const steps = flow.steps;
     const step = steps[currentStep];
 
+    // Check if we hit the failure injection point
+    const shouldFailNow = activeFailure && activeFailure.triggerStep === currentStep;
+
+    const btnPrev = document.getElementById('sim-prev');
+    const btnNext = document.getElementById('sim-next');
+
+    // Disable navigation if we hit a failure terminal state
+    if (shouldFailNow) {
+      btnPrev.disabled = true;
+      btnNext.disabled = true;
+      btnNext.textContent = 'Blocked by Attack';
+    } else {
+      btnPrev.disabled = currentStep === 0;
+      btnNext.textContent = currentStep === steps.length - 1 ? 'Finish' : 'Next \u2192';
+      btnNext.disabled = currentStep === steps.length - 1;
+    }
+
     // Update step label
     document.getElementById('sim-step-label').textContent = `Step ${currentStep + 1} / ${steps.length}`;
-
-    // Update buttons
-    document.getElementById('sim-prev').disabled = currentStep === 0;
-    document.getElementById('sim-next').disabled = currentStep === steps.length - 1;
 
     // Render diagram (step list)
     const diagram = document.getElementById('sim-diagram');
@@ -268,18 +283,21 @@ window.Simulator = (function () {
     steps.forEach((s, i) => {
       let state = i < currentStep ? 'past' : i === currentStep ? 'current' : 'future';
 
-      // If this is the active step AND it has a vulnerability, apply the risk color strictly
-      if (s.vulnerability && i === currentStep) {
+      // If we are at the failure step, make it red and failed
+      if (shouldFailNow && i === currentStep) {
+        state = 'failed';
+      } else if (s.vulnerability && i === currentStep && !shouldFailNow) {
         state += ` risk-${s.vulnerability.risk}`;
       }
 
       html += `<div class="sim-flow-step ${state}">
         <div class="sim-flow-vuln-container">
           <div class="sim-flow-name-wrapper" style="flex-direction: row; align-items: center; gap: 16px;">
-            <div class="sim-flow-num">${i < currentStep ? '&#10003;' : i + 1}</div>
+            <div class="sim-flow-num">${i < currentStep ? '&#10003;' : (shouldFailNow && i === currentStep ? '&#10007;' : i + 1)}</div>
             <div class="sim-flow-name">${s.title}</div>
           </div>
-          ${s.vulnerability && i === currentStep ? `<div class="sim-flow-reason text-risk-${s.vulnerability.risk}">Why: ${s.vulnerability.reason}</div>` : ''}
+          ${s.vulnerability && i === currentStep && !shouldFailNow ? `<div class="sim-flow-reason text-risk-${s.vulnerability.risk}">Why: ${s.vulnerability.reason}</div>` : ''}
+          ${shouldFailNow && i === currentStep ? `<div class="sim-flow-reason text-risk-high" style="font-weight: bold;">ATTACK DETECTED</div>` : ''}
         </div>
       </div>`;
       if (i < steps.length - 1) {
@@ -290,8 +308,21 @@ window.Simulator = (function () {
     diagram.innerHTML = html;
 
     // Render info panel
-    document.getElementById('sim-step-title').textContent = step.title;
-    let contentHtml = step.detail;
+    document.getElementById('sim-step-title').innerHTML = shouldFailNow
+      ? `<span style="color: var(--red);">[ATTACK] ${activeFailure.failure.title}</span>`
+      : step.title;
+
+    let contentHtml = '';
+
+    if (shouldFailNow) {
+      contentHtml += `<div style="margin-bottom: 16px; padding: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); border-radius: 6px; color: #f8fafc;">
+        <h4 style="margin: 0 0 8px 0; color: var(--red);">🚨 Attack Simulation Payload Triggered</h4>
+        <p style="margin: 0 0 8px 0;"><strong>Condition:</strong> ${activeFailure.failure.desc}</p>
+        <p style="margin: 0;"><strong>Result:</strong> ${activeFailure.failure.detail.behavior}</p>
+      </div>`;
+    }
+
+    contentHtml += step.detail;
 
     if (step.importance) {
       contentHtml += `<div style="margin-top: 16px; padding: 12px; background: rgba(99, 102, 241, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; color: #f8fafc; font-size: 0.95rem;">
@@ -302,13 +333,14 @@ window.Simulator = (function () {
 
     document.getElementById('sim-step-detail').innerHTML = contentHtml;
 
-    let secHtml = '<h4>Security Controls</h4><ul>';
-    step.security.forEach(s => { secHtml += `<li>${s}</li>`; });
-    secHtml += '</ul>';
-    if (step.file) secHtml += `<p style="margin-top:8px;font-size:0.75rem;color:var(--text-muted)">File: ${step.file}</p>`;
-    document.getElementById('sim-step-security').innerHTML = secHtml;
-
-    document.getElementById('sim-step-data').textContent = step.data;
+    if (shouldFailNow) {
+      document.getElementById('sim-step-security').innerHTML = `<h4 style="color:var(--red);margin-bottom:8px">Impact Analysis</h4><ul style="color:var(--text-secondary)">${activeFailure.failure.detail.impact.map(i => `<li>${i}</li>`).join('')}</ul>`;
+      document.getElementById('sim-step-data').innerHTML = `<h4 style="color:var(--red);margin-bottom:8px">HTTP Response Payload</h4><pre><code>${activeFailure.failure.detail.response}</code></pre>`;
+    } else {
+      document.getElementById('sim-step-security').innerHTML = `<h4 style="color:var(--text);margin-bottom:8px">Security Controls</h4><ul>${step.security.map(s => `<li>${s}</li>`).join('')}</ul>`;
+      if (step.file) document.getElementById('sim-step-security').innerHTML += `<p style="margin-top:8px;font-size:0.75rem;color:var(--text-muted)">File: ${step.file}</p>`;
+      document.getElementById('sim-step-data').innerHTML = `<pre><code>${step.data}</code></pre>`;
+    }
   }
 
   // --- Recruiter Demo Implementation ---
@@ -353,5 +385,69 @@ window.Simulator = (function () {
     }
   });
 
-  return { init, runDemo };
+  // --- Visual Attack Simulator API ---
+  function runFailureSimulation(failureDef) {
+    if (demoInterval) {
+      clearInterval(demoInterval);
+      demoInterval = null;
+      const demoBtn = document.getElementById('btn-demo');
+      if (demoBtn) demoBtn.textContent = '🚀 Demo';
+    }
+
+    // Determine which flow and step to jump to based on the failure
+    let targetFlow = 'oidc';
+    let targetStepIndex = 0;
+
+    // Map failure IDs to specific steps in the flows
+    if (failureDef.protocol === 'oidc' || failureDef.protocol === 'saml') {
+      targetFlow = failureDef.protocol;
+      if (failureDef.id.includes('state')) targetStepIndex = 3; // Callback Validation
+      else if (failureDef.id.includes('pkce') || failureDef.id.includes('nonce') || failureDef.id.includes('sig') || failureDef.id.includes('email') || failureDef.id.includes('audience') || failureDef.id.includes('replay')) targetStepIndex = 4; // Token Exchange/Validation
+    } else if (failureDef.protocol === 'session' || failureDef.id === 'mfa-gate') {
+      targetFlow = 'session';
+      if (failureDef.id.includes('timeout')) targetStepIndex = 4; // JWT validate call
+      else if (failureDef.id.includes('tamper')) targetStepIndex = 4; // JWT validate call
+      else if (failureDef.id === 'mfa-gate') targetStepIndex = 0; // Check context middleware
+    } else if (failureDef.protocol === 'webauthn') {
+      targetFlow = 'webauthn';
+      targetStepIndex = 3; // Verify Authentication step
+    } else if (failureDef.protocol === 'global') {
+      targetFlow = 'oidc';
+      if (failureDef.id === 'user-deactivated') targetStepIndex = 7; // UPSERT step
+      else if (failureDef.id === 'rate-limit') targetStepIndex = 0; // Login entry point
+    }
+
+    activeFailure = {
+      failure: failureDef,
+      triggerStep: targetStepIndex
+    };
+
+    // Switch protocol UI
+    document.querySelectorAll('.proto-btn').forEach(btn => {
+      if (btn.dataset.flow === targetFlow) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    currentFlow = targetFlow;
+
+    // Fast forward animation
+    let tempStep = 0;
+    currentStep = tempStep;
+    renderFlow();
+
+    const ffInterval = setInterval(() => {
+      if (tempStep < targetStepIndex) {
+        tempStep++;
+        currentStep = tempStep;
+        renderFlow();
+      } else {
+        clearInterval(ffInterval);
+      }
+    }, 600); // Fast forward at 600ms per step until it hits the failure
+  }
+
+  return { init, runDemo, runFailureSimulation };
 })();

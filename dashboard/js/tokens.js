@@ -45,7 +45,9 @@ window.Tokens = (function () {
         { key: 'nonce', value: 'd4e5f6a1b2c3... (validated ✓)', cls: 'ok' },
         { key: 'amr', value: '["pwd", "mfa"]' },
         { key: 'acr', value: 'urn:oasis:names:tc:SAML:2.0:ac:classes:MFA' },
-      ]
+      ],
+      jwtInteractive: true,
+      jwtString: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYzRkNWU2ZjcifQ.eyJpc3MiOiJodHRwczovL2NvbXBhbnkub2t0YS5jb20vb2F1dGgyL2RlZmF1bHQiLCJzdWIiOiIwMHUxYTJiM2M0ZDVlNmY3ZzgiLCJhdWQiOiIwb2ExYjJjM2Q0ZTVmNmc3aDhpOSIsImVtYWlsIjoiamFuZS5kb2VAY29tcGFueS5jb20iLCJnaXZlbl9uYW1lIjoiSmFuZSIsImZhbWlseV9uYW1lIjoiRG9lIiwibmFtZSI6IkphbmUgRG9lIiwiaWF0IjoxNzA4NTMxMjAwLCJleHAiOjE3MDg1MzQ4MDAsIm5vbmNlIjoiZDRlNWY2YTFiMmMz...In0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
     },
     {
       title: 'WebAuthn Credential',
@@ -106,6 +108,27 @@ window.Tokens = (function () {
           <span class="token-field-value${cls}">${f.value}</span>
         </div>`;
       }
+
+      if (card.jwtInteractive) {
+        const parts = card.jwtString.split('.');
+        html += `
+          <button class="jwt-decoder-btn" onclick="document.getElementById('jwt-view').classList.toggle('active')">
+            &#128269; Toggle JWT Decoder
+          </button>
+          <div id="jwt-view" class="jwt-decoded-view">
+            <span class="jwt-header">${parts[0]}</span><span class="jwt-dot">.</span><span class="jwt-payload">${parts[1]}</span><span class="jwt-dot">.</span><span class="jwt-signature">${parts[2]}</span>
+            <div class="jwt-legend">
+              <span class="jwt-header">■ Header (ALGO/KID)</span>
+              <span class="jwt-payload">■ Payload (Claims)</span>
+              <span class="jwt-signature">■ Signature</span>
+            </div>
+            <div class="jwt-sig-valid">
+              &#10004; Signature verified against IdP JWKS
+            </div>
+          </div>
+        `;
+      }
+
       html += '</div></div>';
     }
     grid.innerHTML = html;

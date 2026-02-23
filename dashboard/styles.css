@@ -465,6 +465,7 @@ body {
   color: var(--text-secondary);
   line-height: 1.6;
 }
+
 .detail-plain-label {
   display: block;
   font-size: 0.7rem;

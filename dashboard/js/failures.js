@@ -297,7 +297,12 @@ window.Failures = (function () {
     const d = t.detail;
     const container = document.getElementById('failure-detail');
 
-    container.innerHTML = `<div class="detail-title">${t.title}</div>
+    container.innerHTML = `<div class="detail-title" style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>${t.title}</div>
+        <button class="btn btn-primary" id="btn-run-sim" style="font-size: 0.8rem; background: var(--red); border-color: var(--red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
+          &#9888; Run Simulation
+        </button>
+      </div>
       <div class="failure-detail-inner">
         <div class="fd-section">
           <h4>Trigger Condition</h4>
@@ -317,6 +322,17 @@ window.Failures = (function () {
           <ul>${d.impact.map(i => `<li>${i}</li>`).join('')}</ul>
         </div>
       </div>`;
+
+    document.getElementById('btn-run-sim').addEventListener('click', () => {
+      // 1. Switch to simulator tab
+      const simTab = document.querySelector('.nav-tab[data-panel="simulator"]');
+      if (simTab) simTab.click();
+
+      // 2. Tell simulator to run this specific failure
+      if (window.Simulator && window.Simulator.runFailureSimulation) {
+        window.Simulator.runFailureSimulation(t);
+      }
+    });
   }
 
   return { init };

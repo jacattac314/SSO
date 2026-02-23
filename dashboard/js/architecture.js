@@ -7,77 +7,77 @@ window.Architecture = (function () {
   // Node definitions: { id, label, sublabel, x, y, w, h, color, group }
   const nodes = [
     // External
-    { id: 'browser',  label: 'Browser / Client',    sublabel: 'End-User Agent',           x: 80,  y: 40,  w: 160, h: 52, color: '#4f6ef7', group: 'external' },
-    { id: 'idp',      label: 'Identity Provider',   sublabel: 'Okta / Azure AD / Ping',   x: 500, y: 40,  w: 200, h: 52, color: '#a78bfa', group: 'external' },
-    { id: 'scim-dir', label: 'SCIM Directory',      sublabel: 'IdP User/Group Store',      x: 920, y: 40,  w: 180, h: 52, color: '#a78bfa', group: 'external' },
+    { id: 'browser', label: 'Browser / Client', sublabel: 'End-User Agent', x: 80, y: 40, w: 160, h: 52, color: '#4f6ef7', group: 'external' },
+    { id: 'idp', label: 'Identity Provider', sublabel: 'Okta / Azure AD / Ping', x: 500, y: 40, w: 200, h: 52, color: '#a78bfa', group: 'external' },
+    { id: 'scim-dir', label: 'SCIM Directory', sublabel: 'IdP User/Group Store', x: 920, y: 40, w: 180, h: 52, color: '#a78bfa', group: 'external' },
 
     // Middleware layer
-    { id: 'tenant-mw',  label: 'Tenant Resolver',   sublabel: 'middleware/tenant.ts',      x: 80,  y: 160, w: 160, h: 48, color: '#636880', group: 'middleware' },
-    { id: 'auth-mw',    label: 'Auth Middleware',    sublabel: 'requireAuth / requireMfa',  x: 280, y: 160, w: 160, h: 48, color: '#636880', group: 'middleware' },
-    { id: 'rate-limit', label: 'Rate Limiter',       sublabel: '20 req / 15 min (auth)',    x: 480, y: 160, w: 160, h: 48, color: '#636880', group: 'middleware' },
+    { id: 'tenant-mw', label: 'Tenant Resolver', sublabel: 'middleware/tenant.ts', x: 80, y: 160, w: 160, h: 48, color: '#636880', group: 'middleware' },
+    { id: 'auth-mw', label: 'Auth Middleware', sublabel: 'requireAuth / requireMfa', x: 280, y: 160, w: 160, h: 48, color: '#636880', group: 'middleware' },
+    { id: 'rate-limit', label: 'Rate Limiter', sublabel: '20 req / 15 min (auth)', x: 480, y: 160, w: 160, h: 48, color: '#636880', group: 'middleware' },
 
     // Services layer
-    { id: 'oidc-svc',    label: 'OIDC Service',      sublabel: 'Authorization Code + PKCE', x: 80,  y: 290, w: 160, h: 52, color: '#34d399', group: 'services' },
-    { id: 'saml-svc',    label: 'SAML Service',       sublabel: 'SP-initiated & IdP-init',  x: 280, y: 290, w: 160, h: 52, color: '#fbbf24', group: 'services' },
-    { id: 'webauthn-svc',label: 'WebAuthn Service',   sublabel: 'FIDO2 MFA Layer',          x: 480, y: 290, w: 160, h: 52, color: '#a78bfa', group: 'services' },
-    { id: 'session-svc', label: 'Session Service',    sublabel: 'Opaque token lifecycle',    x: 680, y: 290, w: 160, h: 52, color: '#4f6ef7', group: 'services' },
-    { id: 'audit-svc',   label: 'Audit Service',      sublabel: 'Event logging + retention', x: 880, y: 290, w: 160, h: 52, color: '#fb923c', group: 'services' },
-    { id: 'user-svc',    label: 'User Service',       sublabel: 'JIT provisioning / UPSERT', x: 1060,y: 290, w: 140, h: 52, color: '#22d3ee', group: 'services' },
+    { id: 'oidc-svc', label: 'OIDC Service', sublabel: 'Authorization Code + PKCE', x: 80, y: 290, w: 160, h: 52, color: '#34d399', group: 'services' },
+    { id: 'saml-svc', label: 'SAML Service', sublabel: 'SP-initiated & IdP-init', x: 280, y: 290, w: 160, h: 52, color: '#fbbf24', group: 'services' },
+    { id: 'webauthn-svc', label: 'WebAuthn Service', sublabel: 'FIDO2 MFA Layer', x: 480, y: 290, w: 160, h: 52, color: '#a78bfa', group: 'services' },
+    { id: 'session-svc', label: 'Session Service', sublabel: 'Opaque token lifecycle', x: 680, y: 290, w: 160, h: 52, color: '#4f6ef7', group: 'services' },
+    { id: 'audit-svc', label: 'Audit Service', sublabel: 'Event logging + retention', x: 880, y: 290, w: 160, h: 52, color: '#fb923c', group: 'services' },
+    { id: 'user-svc', label: 'User Service', sublabel: 'JIT provisioning / UPSERT', x: 1060, y: 290, w: 140, h: 52, color: '#22d3ee', group: 'services' },
 
     // State stores
-    { id: 'oidc-state', label: 'OIDC State Store',   sublabel: 'In-memory Map (10 min TTL)', x: 80,  y: 420, w: 170, h: 48, color: '#f87171', group: 'state' },
-    { id: 'wa-challenge',label: 'Challenge Store',   sublabel: 'In-memory Map (5 min TTL)',  x: 300, y: 420, w: 170, h: 48, color: '#f87171', group: 'state' },
-    { id: 'redis',       label: 'Redis',             sublabel: 'Declared but not wired',     x: 520, y: 420, w: 140, h: 48, color: '#f87171', group: 'state' },
+    { id: 'oidc-state', label: 'OIDC State Store', sublabel: 'In-memory Map (10 min TTL)', x: 80, y: 420, w: 170, h: 48, color: '#f87171', group: 'state' },
+    { id: 'wa-challenge', label: 'Challenge Store', sublabel: 'In-memory Map (5 min TTL)', x: 300, y: 420, w: 170, h: 48, color: '#f87171', group: 'state' },
+    { id: 'redis', label: 'Redis', sublabel: 'Declared but not wired', x: 520, y: 420, w: 140, h: 48, color: '#f87171', group: 'state' },
 
     // Database
-    { id: 'postgres',      label: 'PostgreSQL',         sublabel: 'Primary data store',        x: 240, y: 540, w: 180, h: 52, color: '#4f6ef7', group: 'database' },
-    { id: 'tbl-sessions',  label: 'sso_sessions',       sublabel: 'Active session tokens',     x: 80,  y: 630, w: 140, h: 42, color: '#2a2f42', group: 'tables' },
-    { id: 'tbl-users',     label: 'users',              sublabel: 'User profiles',             x: 240, y: 630, w: 120, h: 42, color: '#2a2f42', group: 'tables' },
-    { id: 'tbl-idpconfig', label: 'idp_configs',        sublabel: 'IdP settings (encrypted)',  x: 380, y: 630, w: 140, h: 42, color: '#2a2f42', group: 'tables' },
-    { id: 'tbl-wacreds',   label: 'webauthn_credentials',sublabel: 'FIDO2 keys',              x: 540, y: 630, w: 180, h: 42, color: '#2a2f42', group: 'tables' },
-    { id: 'tbl-audit',     label: 'audit_logs',         sublabel: 'Partitioned, 365-day',      x: 740, y: 630, w: 140, h: 42, color: '#2a2f42', group: 'tables' },
-    { id: 'tbl-refresh',   label: 'refresh_tokens',     sublabel: 'Schema only (unused)',      x: 900, y: 630, w: 150, h: 42, color: '#2a2f42', group: 'tables' },
+    { id: 'postgres', label: 'PostgreSQL', sublabel: 'Primary data store', x: 240, y: 540, w: 180, h: 52, color: '#4f6ef7', group: 'database' },
+    { id: 'tbl-sessions', label: 'sso_sessions', sublabel: 'Active session tokens', x: 80, y: 630, w: 140, h: 42, color: '#2a2f42', group: 'tables' },
+    { id: 'tbl-users', label: 'users', sublabel: 'User profiles', x: 240, y: 630, w: 120, h: 42, color: '#2a2f42', group: 'tables' },
+    { id: 'tbl-idpconfig', label: 'idp_configs', sublabel: 'IdP settings (encrypted)', x: 380, y: 630, w: 140, h: 42, color: '#2a2f42', group: 'tables' },
+    { id: 'tbl-wacreds', label: 'webauthn_credentials', sublabel: 'FIDO2 keys', x: 540, y: 630, w: 180, h: 42, color: '#2a2f42', group: 'tables' },
+    { id: 'tbl-audit', label: 'audit_logs', sublabel: 'Partitioned, 365-day', x: 740, y: 630, w: 140, h: 42, color: '#2a2f42', group: 'tables' },
+    { id: 'tbl-refresh', label: 'refresh_tokens', sublabel: 'Schema only (unused)', x: 900, y: 630, w: 150, h: 42, color: '#2a2f42', group: 'tables' },
   ];
 
   // Connections: { from, to, label, color, dashed }
   const connections = [
-    { from: 'browser',    to: 'tenant-mw',   label: 'HTTP Request' },
-    { from: 'tenant-mw',  to: 'auth-mw',     label: '' },
-    { from: 'auth-mw',    to: 'rate-limit',   label: '' },
-    { from: 'browser',    to: 'idp',          label: 'OIDC Redirect / SAML POST', color: '#34d399' },
-    { from: 'idp',        to: 'oidc-svc',     label: 'Auth Code Callback', color: '#34d399' },
-    { from: 'idp',        to: 'saml-svc',     label: 'SAML Assertion POST', color: '#fbbf24' },
-    { from: 'scim-dir',   to: 'user-svc',     label: 'SCIM 2.0', color: '#22d3ee' },
-    { from: 'oidc-svc',   to: 'oidc-state',   label: 'state / nonce / verifier' },
-    { from: 'oidc-svc',   to: 'session-svc',  label: 'Create session' },
-    { from: 'oidc-svc',   to: 'user-svc',     label: 'UPSERT user' },
-    { from: 'saml-svc',   to: 'session-svc',  label: 'Create session' },
-    { from: 'saml-svc',   to: 'user-svc',     label: 'UPSERT user' },
-    { from: 'webauthn-svc',to: 'wa-challenge', label: 'Store challenge' },
-    { from: 'webauthn-svc',to: 'session-svc', label: 'Elevate to mfa_verified' },
-    { from: 'session-svc',to: 'postgres',     label: 'Read/Write sessions' },
-    { from: 'user-svc',   to: 'postgres',     label: 'Read/Write users' },
-    { from: 'audit-svc',  to: 'postgres',     label: 'Append audit events' },
-    { from: 'auth-mw',    to: 'session-svc',  label: 'Validate token', color: '#4f6ef7' },
-    { from: 'redis',      to: 'oidc-state',   label: 'Should replace', dashed: true, color: '#f87171' },
-    { from: 'redis',      to: 'wa-challenge', label: 'Should replace', dashed: true, color: '#f87171' },
-    { from: 'postgres',   to: 'tbl-sessions', label: '' },
-    { from: 'postgres',   to: 'tbl-users',    label: '' },
-    { from: 'postgres',   to: 'tbl-idpconfig',label: '' },
-    { from: 'postgres',   to: 'tbl-wacreds',  label: '' },
-    { from: 'postgres',   to: 'tbl-audit',    label: '' },
-    { from: 'postgres',   to: 'tbl-refresh',  label: '' },
-    { from: 'oidc-svc',   to: 'audit-svc',    label: 'Log events', color: '#fb923c' },
-    { from: 'saml-svc',   to: 'audit-svc',    label: 'Log events', color: '#fb923c' },
+    { from: 'browser', to: 'tenant-mw', label: 'HTTP Request' },
+    { from: 'tenant-mw', to: 'auth-mw', label: '' },
+    { from: 'auth-mw', to: 'rate-limit', label: '' },
+    { from: 'browser', to: 'idp', label: 'OIDC Redirect / SAML POST', color: '#34d399' },
+    { from: 'idp', to: 'oidc-svc', label: 'Auth Code Callback', color: '#34d399' },
+    { from: 'idp', to: 'saml-svc', label: 'SAML Assertion POST', color: '#fbbf24' },
+    { from: 'scim-dir', to: 'user-svc', label: 'SCIM 2.0', color: '#22d3ee' },
+    { from: 'oidc-svc', to: 'oidc-state', label: 'state / nonce / verifier' },
+    { from: 'oidc-svc', to: 'session-svc', label: 'Create session' },
+    { from: 'oidc-svc', to: 'user-svc', label: 'UPSERT user' },
+    { from: 'saml-svc', to: 'session-svc', label: 'Create session' },
+    { from: 'saml-svc', to: 'user-svc', label: 'UPSERT user' },
+    { from: 'webauthn-svc', to: 'wa-challenge', label: 'Store challenge' },
+    { from: 'webauthn-svc', to: 'session-svc', label: 'Elevate to mfa_verified' },
+    { from: 'session-svc', to: 'postgres', label: 'Read/Write sessions' },
+    { from: 'user-svc', to: 'postgres', label: 'Read/Write users' },
+    { from: 'audit-svc', to: 'postgres', label: 'Append audit events' },
+    { from: 'auth-mw', to: 'session-svc', label: 'Validate token', color: '#4f6ef7' },
+    { from: 'redis', to: 'oidc-state', label: 'Should replace', dashed: true, color: '#f87171' },
+    { from: 'redis', to: 'wa-challenge', label: 'Should replace', dashed: true, color: '#f87171' },
+    { from: 'postgres', to: 'tbl-sessions', label: '' },
+    { from: 'postgres', to: 'tbl-users', label: '' },
+    { from: 'postgres', to: 'tbl-idpconfig', label: '' },
+    { from: 'postgres', to: 'tbl-wacreds', label: '' },
+    { from: 'postgres', to: 'tbl-audit', label: '' },
+    { from: 'postgres', to: 'tbl-refresh', label: '' },
+    { from: 'oidc-svc', to: 'audit-svc', label: 'Log events', color: '#fb923c' },
+    { from: 'saml-svc', to: 'audit-svc', label: 'Log events', color: '#fb923c' },
   ];
 
   // Group backgrounds
   const groups = [
-    { id: 'grp-ext',  label: 'EXTERNAL',    x: 60,  y: 20,  w: 1060, h: 90,  color: 'rgba(167,139,250,0.04)' },
-    { id: 'grp-mw',   label: 'MIDDLEWARE',   x: 60,  y: 140, w: 600,  h: 80,  color: 'rgba(99,104,128,0.04)' },
-    { id: 'grp-svc',  label: 'SERVICES',     x: 60,  y: 265, w: 1160, h: 100, color: 'rgba(79,110,247,0.04)' },
-    { id: 'grp-state',label: 'STATE STORES', x: 60,  y: 395, w: 620,  h: 90,  color: 'rgba(248,113,113,0.04)' },
-    { id: 'grp-db',   label: 'DATABASE',     x: 60,  y: 515, w: 1020, h: 180, color: 'rgba(79,110,247,0.04)' },
+    { id: 'grp-ext', label: 'EXTERNAL', x: 60, y: 20, w: 1060, h: 90, color: 'rgba(167,139,250,0.04)' },
+    { id: 'grp-mw', label: 'MIDDLEWARE', x: 60, y: 140, w: 600, h: 80, color: 'rgba(99,104,128,0.04)' },
+    { id: 'grp-svc', label: 'SERVICES', x: 60, y: 265, w: 1160, h: 100, color: 'rgba(79,110,247,0.04)' },
+    { id: 'grp-state', label: 'STATE STORES', x: 60, y: 395, w: 620, h: 90, color: 'rgba(248,113,113,0.04)' },
+    { id: 'grp-db', label: 'DATABASE', x: 60, y: 515, w: 1020, h: 180, color: 'rgba(79,110,247,0.04)' },
   ];
 
   // Detail info per node
@@ -85,14 +85,20 @@ window.Architecture = (function () {
     browser: {
       title: 'Browser / Client',
       plain: 'This is the person using the app — their web browser or desktop client. It kicks off the login process and holds a secure cookie that proves they\'re signed in, so they don\'t have to log in on every page.',
+      techStack: ['Chrome/Edge/Safari/Firefox', 'Or: Desktop embedded webview'],
+      tradeoffs: ['Relies on browser security model (SameSite, HttpOnly)', 'Vulnerable to XSS if frontend is compromised'],
+      securityFootprint: ['Cookie: HttpOnly; Secure; SameSite=Lax', 'PKCE S256 entirely browser-driven (no backend storage needed for verifier on the client side itself)', 'Opaque session tokens mean XSS cannot steal a JWT payload'],
       body: `<p>End-user agent (browser or Word add-in). Initiates authentication flows and carries the <code>legora_session</code> cookie for subsequent requests.</p>
-<ul><li>Cookie: <code>HttpOnly; Secure; SameSite=Lax</code></li><li>Redirected to IdP for credential entry</li><li>Never handles tokens directly (PKCE S256 prevents interception)</li></ul>`
+<ul><li>Redirected to IdP for credential entry</li><li>Never handles tokens directly (PKCE S256 prevents interception)</li></ul>`
     },
     idp: {
       title: 'Identity Provider (Okta / Azure AD / Ping)',
       plain: 'This is the login service your organisation already uses — like Okta or Microsoft Azure. It\'s where users actually type their password. Our system never touches passwords at all; it simply trusts this service to confirm who you are.',
+      techStack: ['SAML 2.0 Identity Provider', 'OpenID Connect OP (Okta, Entra ID)'],
+      tradeoffs: ['Zero control over the login UI or authentication factors used', 'Absolute hard dependency: if IdP is down, login is impossible'],
+      securityFootprint: ['Issues signed identity assertions (tokens/XML)', 'Acts as the single source of truth for user lifecycle (SCIM)'],
       body: `<p>External IdP that owns user identities. This system <strong>never issues identity assertions</strong> — it is exclusively an SP/RP.</p>
-<ul><li>OIDC: issues authorization codes, ID tokens, access tokens</li><li>SAML: issues signed XML assertions</li><li>SCIM: provisions/deprovisions users and groups</li><li>No local password fallback — hard dependency</li></ul>`
+<ul><li>OIDC: issues authorization codes, ID tokens, access tokens</li><li>SAML: issues signed XML assertions</li></ul>`
     },
     'scim-dir': {
       title: 'SCIM Directory',
@@ -139,8 +145,11 @@ window.Architecture = (function () {
     'session-svc': {
       title: 'Session Service',
       plain: 'Once you\'re logged in, this creates a unique secret token that gets stored in your browser cookie. Every time you visit a page, this token is checked to confirm you\'re still signed in — like a wristband at an event that you show at each door instead of re-buying a ticket.',
+      techStack: ['Node.js Crypto', 'PostgreSQL (Storage)'],
+      tradeoffs: ['Stateful sessions require database lookup on every request (higher latency than stateless JWTs)', 'Enables immediate forced logout device-wide, which stateless JWTs struggle with'],
+      securityFootprint: ['Issues 256-bit entropy opaque tokens', 'Risk: Tokens stored in plaintext in database', 'Controls absolute and idle timeouts'],
       body: `<p>Manages opaque session tokens. Located at <code>src/services/session.service.ts</code>.</p>
-<ul><li>Token: <code>crypto.randomBytes(32).toString('hex')</code> — 256-bit entropy</li><li>Stored <strong>in plaintext</strong> in DB (gap — should be hashed)</li><li>Absolute timeout: checked via <code>expires_at</code></li><li>Idle timeout: checked via <code>last_activity_at + idle_timeout</code></li><li>Updates <code>last_activity_at</code> on every successful validation</li></ul>`
+<ul><li>Token: <code>crypto.randomBytes(32).toString('hex')</code></li><li>Absolute timeout: checked via <code>expires_at</code></li><li>Idle timeout: checked via <code>last_activity_at</code></li></ul>`
     },
     'audit-svc': {
       title: 'Audit Service',
@@ -157,8 +166,11 @@ window.Architecture = (function () {
     'oidc-state': {
       title: 'OIDC State Store',
       plain: 'A short-term scratchpad used during the login process to hold temporary data (like a unique code to prevent forgery attacks). It\'s currently stored only in the server\'s memory, which means if the server restarts mid-login, that login attempt is lost. This is a known gap that needs to be fixed for production.',
+      techStack: ['JavaScript Map() Object'],
+      tradeoffs: ['Extremely fast, zero-latency local lookups', 'Critical flaw: Breaks when scaling out to multiple load-balanced servers'],
+      securityFootprint: ['Holds highly sensitive PKCE verifiers temporarily', 'Auto-evicts entries after 10 minutes to prevent memory leaks/replay windows'],
       body: `<p><strong>In-memory Map</strong> — critical production gap.</p>
-<ul><li>Stores: state, nonce, codeVerifier, tenantId, idpConfigId, redirectUrl</li><li>10-minute TTL (entries auto-deleted)</li><li>Lost on process restart — active logins will fail</li><li>Not shared across instances — breaks horizontal scaling</li><li>Code comment: "use Redis in production"</li></ul>`
+<ul><li>Stores: state, nonce, codeVerifier, tenantId, idpConfigId, redirectUrl</li><li>10-minute TTL (entries auto-deleted)</li><li>Lost on process restart — active logins will fail</li></ul>`
     },
     'wa-challenge': {
       title: 'WebAuthn Challenge Store',
@@ -175,8 +187,11 @@ window.Architecture = (function () {
     postgres: {
       title: 'PostgreSQL',
       plain: 'The main database where everything important is stored permanently — user accounts, active sessions, company configurations, security keys, and the full audit history. All sensitive data is encrypted at rest.',
+      techStack: ['PostgreSQL 15+', 'Knex.js / Prisma Query Builder'],
+      tradeoffs: ['Relational persistence ensures high data integrity (ACID) over NoSQL', 'Writes can become a bottleneck during extreme login spikes vs Redis'],
+      securityFootprint: ['Tenant isolation via forced tenant_id bounding in every query', 'AES-256-GCM application-level encryption for IDP secrets', 'Audit logs physically partitioned from active data rows'],
       body: `<p>Primary persistent data store. Connection via <code>src/config/database.ts</code>.</p>
-<ul><li>Multi-tenant: every table scoped by <code>tenant_id</code></li><li>AES-256-GCM encryption for secrets at rest</li><li>Audit logs partitioned by year</li><li>Migration system in <code>src/db/migrations/</code></li></ul>`
+<ul><li>Multi-tenant: every table scoped by <code>tenant_id</code></li><li>AES-256-GCM encryption for secrets at rest</li><li>Migration system in <code>src/db/migrations/</code></li></ul>`
     },
     'tbl-sessions': {
       title: 'sso_sessions',
@@ -309,10 +324,51 @@ window.Architecture = (function () {
       svg.querySelectorAll('.node-rect').forEach(r => r.setAttribute('stroke-width', '1.5'));
       g.querySelector('.node-rect').setAttribute('stroke-width', '3');
 
-      const plainSection = info.plain
-        ? `<div class="detail-plain"><span class="detail-plain-label">In plain English</span>${info.plain}</div>`
-        : '';
-      detail.innerHTML = `<div class="detail-title">${info.title}</div>${plainSection}<div class="detail-body">${info.body}</div>`;
+      let html = `<div class="detail-title">${info.title}</div>`;
+
+      if (info.plain) {
+        html += `<div class="detail-plain">
+          <span class="detail-plain-label" style="display:inline-block; margin-bottom: 8px; font-weight: 600; color: var(--accent-light);">EXECUTIVE SUMMARY</span>
+          ${info.plain}
+        </div>`;
+      }
+
+      if (info.techStack || info.tradeoffs || info.securityFootprint) {
+        html += `<div style="display:flex; flex-direction:column; gap: 16px; margin: 20px 0;">`;
+
+        if (info.techStack) {
+          html += `<div class="deep-dive-section">
+            <h4 style="color:var(--text); font-size:0.9rem; margin-bottom:8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">🛠️ Tech Stack & Implementation</h4>
+            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+              ${info.techStack.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>`;
+        }
+
+        if (info.tradeoffs) {
+          html += `<div class="deep-dive-section">
+            <h4 style="color:var(--text); font-size:0.9rem; margin-bottom:8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">⚖️ Architectural Design Tradeoffs</h4>
+            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+              ${info.tradeoffs.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>`;
+        }
+
+        if (info.securityFootprint) {
+          html += `<div class="deep-dive-section">
+            <h4 style="color:var(--text); font-size:0.9rem; margin-bottom:8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">🛡️ Security Footprint & Controls</h4>
+            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+              ${info.securityFootprint.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>`;
+        }
+
+        html += `</div>`;
+      }
+
+      html += `<div class="detail-body" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1);"><h4 style="color:var(--text); font-size:0.9rem; margin-bottom:8px;">Protocol Level Details</h4>${info.body}</div>`;
+
+      detail.innerHTML = html;
     });
   }
 
