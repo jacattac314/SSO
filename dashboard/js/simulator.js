@@ -16,7 +16,9 @@ window.Simulator = (function () {
         {
           title: '2. PKCE Generation & IdP Redirect',
           detail: 'OidcService.initiateLogin() generates cryptographic parameters: a 256-bit codeVerifier, its SHA-256 codeChallenge, a random state, and a random nonce. All are stored in the in-memory stateStore with a 10-minute TTL. The browser is redirected to the IdP authorization endpoint.',
+          importance: 'Protects the system against CSRF and credential interception. Modern PKCE prevents attacks where authorization codes are intercepted and exchanged maliciously, showcasing zero-trust principles.',
           security: ['PKCE S256 method (RFC 7636)', 'State parameter for CSRF protection', 'Nonce for replay protection', 'Audit: SSO_LOGIN_INITIATED'],
+          vulnerability: { risk: 'low', reason: 'PKCE mitigates interception risks.' },
           data: '{\n  state: "a1b2c3...",           // random, links callback to request\n  nonce: "d4e5f6...",           // random, embedded in ID token\n  codeVerifier: "[256-bit]",    // never sent to IdP\n  codeChallenge: "SHA256(cv)", // sent to IdP\n  tenantId: "tenant-uuid",\n  idpConfigId: "idp-uuid",\n  redirectUrl: "/app/dashboard",\n  createdAt: 1708531200000,     // 10-min TTL\n}',
           file: 'src/services/oidc.service.ts'
         },
@@ -31,6 +33,7 @@ window.Simulator = (function () {
           title: '4. Callback — State Validation',
           detail: 'The callback handler receives the authorization code and state. It validates the state against the stateStore (one-time use — the entry is deleted after retrieval). If the state is missing, expired (>10 min), or already consumed, the request fails.',
           security: ['State validated against stateStore', 'State entry deleted after use (one-time)', 'Error query params checked first', 'Audit: SSO_LOGIN_FAILURE on any error'],
+          vulnerability: { risk: 'medium', reason: 'In-memory state store resets during restarts, dropping ongoing logins.' },
           data: '// GET /auth/oidc/:tenantId/callback?code=abc&state=a1b2c3\n\n// stateStore.get("a1b2c3") → stored params\n// stateStore.delete("a1b2c3")  ← one-time use\n\n// If state not found: 401 "Invalid or expired OIDC state"',
           file: 'src/routes/auth/oidc.ts → src/services/oidc.service.ts'
         },
@@ -44,6 +47,7 @@ window.Simulator = (function () {
         {
           title: '6. Claims Extraction & Attribute Mapping',
           detail: 'Claims are extracted from the ID token: sub, email, given_name, family_name, name. The userinfo endpoint is called for group membership claims. The attribute_mapping JSONB from the IdP config transforms IdP claim names to Legora field names. IdP groups are mapped to Legora roles via the role_mappings table.',
+          importance: 'Ensures seamless enterprise integration. Translating diverse IdP schemas into a standardized internal format minimizes friction when onboarding large institutional clients like banks or hedge funds.',
           security: ['Email claim required (throws if missing)', 'Userinfo fetch failure is non-fatal (warning)', 'AMR/ACR claims inspected for IdP-reported MFA'],
           data: '// Claims from ID token:\n{\n  sub: "user-id-at-idp",\n  email: "user@company.com",\n  given_name: "Jane",\n  family_name: "Doe",\n  amr: ["pwd", "mfa"],  // MFA indicators\n  acr: "urn:mfa"         // fallback MFA indicator\n}\n\n// Groups from userinfo endpoint:\n{\n  groups: ["Legal-Team", "Admin"]\n}',
           file: 'src/services/oidc.service.ts'
@@ -51,6 +55,7 @@ window.Simulator = (function () {
         {
           title: '7. JIT User Provisioning',
           detail: 'userService.upsertFromSso() performs an UPSERT on (tenant_id, email). If the user exists, roles, groups, and last_login_at are updated. If new, a user record is created. The is_active flag is checked — deactivated accounts throw a 401.',
+          importance: 'Automates lifecycle management (JIT Provisioning). Removes the need for manual admin intervention when new employees join or leave a client organization, drastically reducing operational overhead.',
           security: ['UPSERT prevents duplicate accounts', 'is_active check blocks deactivated users', 'Audit: SSO_LOGIN_FAILURE if deactivated'],
           data: '// UPSERT users ON (tenant_id, email)\n// SET:\n//   roles = mapped_roles,\n//   groups = idp_groups,\n//   last_login_at = NOW()\n// CHECK: is_active = true\n// FAIL: "User account is deactivated" → 401',
           file: 'src/services/user.service.ts'
@@ -58,6 +63,7 @@ window.Simulator = (function () {
         {
           title: '8. Session Creation',
           detail: 'SessionService.create() generates a 256-bit opaque token (crypto.randomBytes(32).toString("hex")), inserts a row into sso_sessions with absolute timeout, and stores OIDC tokens, MFA status, IP address, and user agent.',
+          importance: 'Opaque tokens ensure that sensitive user attributes never reach the browser, preventing client-side token tampering or inspection common with JWTs.',
           security: ['256-bit random token (not JWT)', 'Absolute timeout set at creation', 'Tenant-scoped timeout overrides', 'IP address and user agent recorded', 'Audit: SESSION_CREATED'],
           data: '// generateToken(32) → 64-char hex string\n\n// INSERT sso_sessions:\n{\n  session_token: "a8f3...64 hex chars",\n  tenant_id: "...",\n  user_id: "...",\n  expires_at: "NOW() + absolute_timeout",\n  oidc_id_token: "eyJ...",     // stored plaintext\n  oidc_access_token: "...",\n  oidc_refresh_token: "...",\n  mfa_verified: false,\n  ip_address: "203.0.113.1",\n  user_agent: "Mozilla/5.0..."\n}',
           file: 'src/services/session.service.ts'
@@ -66,12 +72,14 @@ window.Simulator = (function () {
           title: '9. Cookie Set & Redirect',
           detail: 'The session token is set as an HttpOnly cookie and the user is redirected to the application. The redirect URL comes from the pre-login state (stored in stateStore) or defaults to BASE_URL/app.',
           security: ['HttpOnly: true (no JavaScript access)', 'Secure: true (production only)', 'SameSite: Lax (CSRF mitigation)', 'Path: / (available to all routes)', 'Gap: redirect URL not validated against allowlist'],
+          vulnerability: { risk: 'high', reason: 'Open Redirect Vulnerability: RelayState hostname is missing proper allowlist validation.' },
           data: '// Set-Cookie: legora_session=a8f3...;\n//   HttpOnly;\n//   Secure;        (production)\n//   SameSite=Lax;\n//   Path=/;\n//   Max-Age=86400  (absolute_timeout)\n\n// 302 Redirect → /app/dashboard (or stored redirectUrl)',
           file: 'src/routes/auth/oidc.ts'
         },
         {
           title: '10. Authenticated Request (Middleware)',
           detail: 'On subsequent requests, requireAuth() extracts the token from the cookie or Authorization header. SessionService.validate() checks absolute timeout (expires_at), idle timeout (last_activity_at + idle_timeout), and updates last_activity_at on success.',
+          importance: 'Continuous enforcement of session boundaries (idle and absolute timeouts) is mandated by institutional security standards (e.g., SOC2, ISO27001).',
           security: ['Absolute timeout enforced on every request', 'Idle timeout enforced on every request', 'Session data attached to req for downstream use', 'Cookie cleared on invalid session', 'requireMfa() available for protected routes'],
           data: '// SessionService.validate(token):\n//\n// 1. SELECT FROM sso_sessions WHERE token = ?\n// 2. Check: expires_at > NOW()         → SESSION_EXPIRED_ABSOLUTE\n// 3. Check: last_activity + idle < NOW → SESSION_EXPIRED_IDLE\n// 4. UPDATE last_activity_at = NOW()\n// 5. Return session_data → req.session\n//\n// On failure: 401 + clear legora_session cookie',
           file: 'src/middleware/auth.ts → src/services/session.service.ts'
@@ -258,10 +266,21 @@ window.Simulator = (function () {
     const diagram = document.getElementById('sim-diagram');
     let html = '<div class="sim-flow">';
     steps.forEach((s, i) => {
-      const state = i < currentStep ? 'past' : i === currentStep ? 'current' : 'future';
+      let state = i < currentStep ? 'past' : i === currentStep ? 'current' : 'future';
+
+      // If this is the active step AND it has a vulnerability, apply the risk color strictly
+      if (s.vulnerability && i === currentStep) {
+        state += ` risk-${s.vulnerability.risk}`;
+      }
+
       html += `<div class="sim-flow-step ${state}">
-        <div class="sim-flow-num">${i < currentStep ? '&#10003;' : i + 1}</div>
-        <div class="sim-flow-name">${s.title}</div>
+        <div class="sim-flow-vuln-container">
+          <div class="sim-flow-name-wrapper" style="flex-direction: row; align-items: center; gap: 16px;">
+            <div class="sim-flow-num">${i < currentStep ? '&#10003;' : i + 1}</div>
+            <div class="sim-flow-name">${s.title}</div>
+          </div>
+          ${s.vulnerability && i === currentStep ? `<div class="sim-flow-reason text-risk-${s.vulnerability.risk}">Why: ${s.vulnerability.reason}</div>` : ''}
+        </div>
       </div>`;
       if (i < steps.length - 1) {
         html += `<div class="sim-flow-arrow ${i < currentStep ? 'past' : ''}">&darr;</div>`;
@@ -272,7 +291,16 @@ window.Simulator = (function () {
 
     // Render info panel
     document.getElementById('sim-step-title').textContent = step.title;
-    document.getElementById('sim-step-detail').innerHTML = step.detail;
+    let contentHtml = step.detail;
+
+    if (step.importance) {
+      contentHtml += `<div style="margin-top: 16px; padding: 12px; background: rgba(99, 102, 241, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; color: #f8fafc; font-size: 0.95rem;">
+        <strong style="color: var(--accent-light); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Executive Value</strong><br/>
+        ${step.importance}
+      </div>`;
+    }
+
+    document.getElementById('sim-step-detail').innerHTML = contentHtml;
 
     let secHtml = '<h4>Security Controls</h4><ul>';
     step.security.forEach(s => { secHtml += `<li>${s}</li>`; });
@@ -283,5 +311,47 @@ window.Simulator = (function () {
     document.getElementById('sim-step-data').textContent = step.data;
   }
 
-  return { init };
+  // --- Recruiter Demo Implementation ---
+  let demoInterval = null;
+
+  function runDemo() {
+    // Stop any existing demo
+    if (demoInterval) {
+      clearInterval(demoInterval);
+      demoInterval = null;
+    }
+
+    // Switch to OIDC flow and reset to step 0
+    document.querySelector('.proto-btn[data-flow="oidc"]').click();
+    currentStep = 0;
+    renderFlow();
+
+    // Start automated progression
+    demoInterval = setInterval(() => {
+      const max = flows[currentFlow].steps.length - 1;
+      if (currentStep < max) {
+        currentStep++;
+        renderFlow();
+      } else {
+        // End of flow, stop demo
+        clearInterval(demoInterval);
+        demoInterval = null;
+      }
+    }, 2500); // Fast 2.5-second pacing
+  }
+
+  // Stop demo if user manually interacts with steps or protocols
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('.proto-btn') || e.target.matches('#sim-prev') || e.target.matches('#sim-next') || e.target.matches('#sim-reset')) {
+      if (demoInterval && !e.target.matches('.proto-btn[data-flow="oidc"]') && e.target.textContent !== '🚀 Demo') {
+      }
+
+      if (e.isTrusted && demoInterval) {
+        clearInterval(demoInterval);
+        demoInterval = null;
+      }
+    }
+  });
+
+  return { init, runDemo };
 })();

@@ -23,5 +23,19 @@
         if (target) target.classList.add('active');
       });
     });
+
+    const demoBtn = document.getElementById('btn-demo');
+    if (demoBtn) {
+      demoBtn.addEventListener('click', () => {
+        // Switch to the Simulator panel programmatically
+        const simTab = document.querySelector('.nav-tab[data-panel="simulator"]');
+        if (simTab) simTab.click();
+
+        // Let the Simulator handle the demo sequence
+        if (window.Simulator && window.Simulator.runDemo) {
+          window.Simulator.runDemo();
+        }
+      });
+    }
   }
 })();
